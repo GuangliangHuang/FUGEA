@@ -1,5 +1,4 @@
 boltons==25.0.0
-certifi @ file:///croot/certifi_1671487769961/work/certifi
 charset-normalizer==2.1.1
 easydict==1.13
 filelock==3.12.2
