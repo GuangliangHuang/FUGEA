@@ -10,8 +10,8 @@ class FUGEA:
                  model_names, 
                  epsilon=16/255, 
                  alpha=1.6/255, 
-                 epoch=10, 
-                 pre_epoch=5, 
+                 T_prg=10, 
+                 T_rce=5, 
                  beta=10, 
                  threshold=-0.3, 
                  s=10, 
@@ -21,7 +21,7 @@ class FUGEA:
                  targeted=False):
         
         self.epsilon, self.alpha = epsilon, alpha
-        self.epoch, self.pre_epoch = epoch, pre_epoch
+        self.T_prg, self.T_rce = T_prg, T_rce
         self.beta, self.threshold = beta, threshold
         self.s, self.num_neighbor, self.gamma = s, num_neighbor, gamma
         self.decay, self.targeted = decay, targeted
@@ -47,7 +47,7 @@ class FUGEA:
         
         momentum_G = 0.
 
-        for _ in range(self.pre_epoch):
+        for _ in range(self.T_rce):
             outputs = [m(delta + data) for m in self.model.models]
             losses = [self.loss_func(out, label) for out in outputs]
             grads = [torch.autograd.grad(l, delta, retain_graph=True)[0] for l in losses]
@@ -60,7 +60,7 @@ class FUGEA:
             momentum_G = self.decay * momentum_G + grad
             delta = self._update(delta, data, momentum_G, self.alpha * self.s)
 
-        for _ in range(self.epoch):
+        for _ in range(self.T_prg):
             snpg_grads = [self._snpg(data, delta, label, i) for i in range(self.num_model)]
             weights = torch.softmax(torch.stack([self.loss_func(m(delta + data), label) for m in self.model.models]), dim=0)
             
